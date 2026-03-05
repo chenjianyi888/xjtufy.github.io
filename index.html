@@ -998,6 +998,8 @@
                 'recruitment': 'section-recruitment'
             };
 
+            var STORAGE_KEY = 'preferred-lang';
+
             function setLang(lang) {
                 document.body.classList.toggle('lang-en', lang === 'en');
                 document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
@@ -1007,6 +1009,18 @@
                 navItems.forEach(function(a) {
                     a.textContent = a.getAttribute(lang === 'zh' ? 'data-zh' : 'data-en');
                 });
+                try { localStorage.setItem(STORAGE_KEY, lang); } catch (e) {}
+            }
+
+            // 首次访问：根据浏览器语言或 IP 地区自动选择默认语言（仅当未保存过偏好时）
+            function getDefaultLang() {
+                var stored = null;
+                try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+                if (stored === 'zh' || stored === 'en') return stored;
+                // 优先用浏览器语言（无需请求、尊重用户系统设置）
+                var browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                if (browserLang.indexOf('zh') === 0) return 'zh';
+                return 'en';
             }
 
             function showPage(pageId) {
@@ -1042,6 +1056,9 @@
 
             btnZh.addEventListener('click', function() { setLang('zh'); });
             btnEn.addEventListener('click', function() { setLang('en'); });
+
+            // 页面加载时：若有保存的偏好用偏好，否则按浏览器语言自动选默认语言
+            setLang(getDefaultLang());
         })();
     </script>
 </body>
